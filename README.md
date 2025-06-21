@@ -6,7 +6,7 @@ ptt.h is a simple, easy-to-use HTTP library (currently under developement.
 ## Examples
 A simple server that on GET requests to /example responds with a HTML page that displays a friendly message and a button :).
 
-'''c
+```c
 #include "ptt.h"
 #include <unistd.h>
 
@@ -27,4 +27,4 @@ int main() {
   ptth_bind_server(&server, "127.0.0.1", 8081);
   ptth_start(server);
 }
-'''
+```
