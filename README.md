@@ -1,5 +1,8 @@
 # ptt.h
 
+> [!WARNING]
+> This library is NOT production ready (yet). Please only use it for fun. :)
+
 ## Description
 ptt.h is a simple, easy-to-use HTTP library (currently under developement.
 
@@ -51,4 +54,18 @@ int main() {
   ptth_start(server);
 }
 ```
+Here is what the browser displays:
 ![example_hi](./plus/hi_alex.png)
+
+## Installation and Usage
+To install and use ptt.h you should simply clone this repository and copy the header in your working directory.
+
+```sh 
+ $ git clone 'https://github.com/kickhead/ptt.h.git'
+ $ cp ./ptt.h/ptt.h ./../myWorkingDir
+```
+After that you can use it as any other header library... include it in your porjects :).
+```c 
+#include "ptt.h"
+```
+
