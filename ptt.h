@@ -428,7 +428,6 @@ ptth_server_t *ptth_server_copy(ptth_server_t server) {
     cp -> services[iter] = server.services[iter];
   cp -> address = server.address;
   cp -> ipaddr = NULL;
-  write(1, "copy\n", 5);
   return cp;
 }
 
