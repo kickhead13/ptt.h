@@ -406,7 +406,32 @@ void ptth_handle(int cfd, ptth_services_t *services[5]) {
   return;
 }
 
-int ptth_start(ptth_server_t server) {
+#define _sv_cstx(x) ((ptth_server_t *)(x))
+void *ptth_thread_operate(void *server) {
+  int addrlen = sizeof(_sv_cstx(server)->address);
+  while (1) {
+    if ((_sv_cstx(server)->cfd = accept(_sv_cstx(server)->sfd, (struct sockaddr *)&_sv_cstx(server)->address, (socklen_t*)&addrlen)) < 0) {
+      perror("accept");
+      exit(EXIT_FAILURE);
+      continue;
+    }
+        
+    ptth_handle(_sv_cstx(server)->cfd, _sv_cstx(server)->services);
+  }
+}
+
+ptth_server_t *ptth_server_copy(ptth_server_t server) {
+  ptth_server_t *cp = malloc(sizeof(ptth_server_t));
+  cp -> cfd = server.cfd;
+  cp -> sfd = server.cfd;
+  for(size_t iter = 0; iter < 5; iter++) 
+    cp -> services[iter] = server.services[iter];
+  cp -> address = server.address;
+  cp -> ipaddr = NULL;
+  return cp;
+}
+
+int ptth_start(ptth_server_t server, int no_of_workers) {
   int sfd, cfd;
   int opt = 1;
   int addrlen = sizeof(server.address);
@@ -438,17 +463,17 @@ int ptth_start(ptth_server_t server) {
   }
     
   printf("[START] SERVER listening on [ADDR=\"%s\" PORT=%ld]\n",inet_ntoa(server.address.sin_addr), server.port);
-    
-  while (1) {
-    if ((server.cfd = accept(server.sfd, (struct sockaddr *)&server.address, (socklen_t*)&addrlen)) < 0) {
-      perror("accept");
-      exit(EXIT_FAILURE);
-      continue;
-    }
-        
-    ptth_handle(server.cfd, server.services);
+  pthread_t pt[no_of_workers];
+  ptth_server_t *nsa[no_of_workers];
+  for(size_t iter = 0; iter < no_of_workers; iter++) {
+    nsa[iter] = ptth_server_copy(server);
+    pthread_create(&pt[iter], NULL, ptth_thread_operate, nsa[iter]);
   }
-    
+  for(size_t iter = 0; iter < no_of_workers; iter++) {
+    pthread_join(pt[iter], NULL);
+  }
   return 0;
 } 
+
+#define ptth_start(sv) ptth_start((sv), 1)
 #endif
