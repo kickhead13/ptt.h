@@ -31,7 +31,7 @@ int main() {
   ptth_start(server);
 }
 ```
-You're endpoints don't have to be static, you can retrieve name segments of your URL and retrieve them at run time. Here is an example where when you access /hi/<name>/ it will display the message "Hi, <name>! :3".
+You're endpoints don't have to be static, you can set up variable names for URL segment and retrieve them at run time. Here is an example where when you access /hi/<name>/ the web server will display the message "Hi, <name>! :3" in the browser.
 ```c
 #include "ptt.h"
 #include <unistd.h>
