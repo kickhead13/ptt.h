@@ -423,11 +423,12 @@ void *ptth_thread_operate(void *server) {
 ptth_server_t *ptth_server_copy(ptth_server_t server) {
   ptth_server_t *cp = malloc(sizeof(ptth_server_t));
   cp -> cfd = server.cfd;
-  cp -> sfd = server.cfd;
+  cp -> sfd = server.sfd;
   for(size_t iter = 0; iter < 5; iter++) 
     cp -> services[iter] = server.services[iter];
   cp -> address = server.address;
   cp -> ipaddr = NULL;
+  write(1, "copy\n", 5);
   return cp;
 }
 
@@ -475,5 +476,5 @@ int ptth_start(ptth_server_t server, int no_of_workers) {
   return 0;
 } 
 
-#define ptth_start(sv) ptth_start((sv), 1)
+#define ptth_start_single(sv) ptth_start((sv), 1)
 #endif
