@@ -54,7 +54,7 @@ int main() {
   ptth_start(server);
 }
 ```
-Here is what the browser displays:
+Here is what the browser displays:<br>
 ![example_hi](./plus/hi_alex.png)
 
 ## Installation and Usage
