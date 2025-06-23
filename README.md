@@ -4,7 +4,7 @@
 > This library is NOT production ready (yet). Please only use it for fun. :)
 
 ## Description
-ptt.h is a simple, easy-to-use HTTP library (currently under developement.
+`ptt.h` is a simple and easy-to-use HTTP library for C, that will get you past the boredom of initial setups and right into implementing web services... (currently under developement).
 
 ## Examples
 A simple server that on GET requests to /example responds with a HTML page that displays a friendly message and a button :).
