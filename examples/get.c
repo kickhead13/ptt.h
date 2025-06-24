@@ -16,5 +16,5 @@ int main() {
   ptth_init_server(&server);
   ptth_add_service(&server, PTTH_GET, "/example", &get_func);
   ptth_bind_server(&server, "127.0.0.1", 8081);
-  ptth_start(server);
+  ptth_start_single(server);
 }
