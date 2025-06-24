@@ -28,7 +28,7 @@ int main() {
   ptth_init_server(&server);
   ptth_add_service(&server, PTTH_GET, "/example", &get_func);
   ptth_bind_server(&server, "127.0.0.1", 8081);
-  ptth_start(server);
+  ptth_start_single(server);
 }
 ```
 You're endpoints don't have to be static, you can set up variable names for URL segments and retrieve them at run time. Here is an example where when you access `/hi/<name>/` the web server will display the message `"Hi, <name>! :3"` in the browser.
@@ -51,7 +51,7 @@ int main() {
   ptth_init_server(&server);
   ptth_add_service(&server, PTTH_GET, "/hi/{var_name}/", &get_func);
   ptth_bind_server(&server, "127.0.0.1", 8081);
-  ptth_start(server);
+  ptth_start_single(server);
 }
 ```
 Here is what the browser displays:<br>
