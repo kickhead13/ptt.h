@@ -25,6 +25,7 @@
 
 #define PTTH1_1 "HTTP/1.1"
 #define PTTH1_1_404_NOT_FOUND PTTH1_1" 404 Not Found"
+#define PTTH1_1_202_ACCEPTED PTTH1_1" 202 Accepted"
 
 enum ptth_methods_e { 
   PTTH_GET    = 0,
@@ -107,13 +108,12 @@ ptth_request_t ptth_empty_request();
   ptth_response_t resp;\
   resp.body.body=malloc(strlen((response_payload)) + 1);\
   strcpy(resp.body.body,(response_payload));\
-  resp.headers.head = malloc(strlen("HTTP/1.1 202 Accepted\r\n""Content-Type: text/html\r\n""Connection: close\r\n""\r\n") + 1);\
-  strcpy(resp.headers.head, "HTTP/1.1 202 Accepted\r\n""Content-Type: text/html\r\n""Connection: close\r\n""\r\n");\
+  resp.headers.head = malloc(strlen(PTTH1_1_202_ACCEPTED"\r\n""Content-Type: text/html\r\n""Connection: close\r\n""\r\n") + 1);\
+  strcpy(resp.headers.head, PTTH1_1_202_ACCEPTED"\r\n""Content-Type: text/html\r\n""Connection: close\r\n""\r\n");\
   return resp;
 
 
 char *ptth_map_value(ptth_map_t map, char *key) {
-  if(map.keys == NULL || map.vals == NULL) return NULL;
   for(size_t i = 0; i < PTTH_SIZE_OF_MAP; i++) {
     if(map.keys[i] == NULL) break;
     if(strcmp(map.keys[i], key) == 0) return map.vals[i];
@@ -350,8 +350,8 @@ void ptth_log(enum ptth_methods_e method, char *ed, int fine) {
 }
 
 void ptth_handle(int cfd, ptth_services_t *services[5]) {
+  
   char request[PTTH_REQ_BUFFER_SIZE];
-  int bytes_read = read(cfd, request, PTTH_REQ_BUFFER_SIZE-1);
   
   ptth_request_t req;
   ptth_shared_t *sh;
@@ -370,7 +370,6 @@ void ptth_handle(int cfd, ptth_services_t *services[5]) {
 
   while(head != NULL) {
     if(regexec(head -> endpoint, req_ep, 0, NULL, 0) == 0) {
-      ssize_t oc = 0, sc = -1, cc = 0;
       char *token = strtok(sreq_ep, "/");
       size_t ec = 0;
       while(token != NULL) {
@@ -432,9 +431,7 @@ ptth_server_t *ptth_server_copy(ptth_server_t server) {
 }
 
 int ptth_start(ptth_server_t server, int no_of_workers) {
-  int sfd, cfd;
   int opt = 1;
-  int addrlen = sizeof(server.address);
     
   if ((server.sfd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
     perror("[SERVER] FAILED ON socket(...)");
@@ -463,12 +460,27 @@ int ptth_start(ptth_server_t server, int no_of_workers) {
   }
     
   printf("[START] SERVER listening on [ADDR=\"%s\" PORT=%ld]\n",inet_ntoa(server.address.sin_addr), server.port);
+  fflush(stdout);
+  
   pthread_t pt[no_of_workers];
   ptth_server_t *nsa[no_of_workers];
+  
+  char loading[no_of_workers+1];
+  loading[no_of_workers] = '\0';
+  for(size_t iter = 0; iter < no_of_workers; iter++) loading[iter] = '.';
   for(size_t iter = 0; iter < no_of_workers; iter++) {
     nsa[iter] = ptth_server_copy(server);
-    pthread_create(&pt[iter], NULL, ptth_thread_operate, nsa[iter]);
+    int pthread_create_ret = pthread_create(&pt[iter], NULL, ptth_thread_operate, nsa[iter]);
+    if(pthread_create_ret) {
+      perror("[START] failed to create worker using pthread_create(...)");
+      exit(EXIT_FAILURE);
+    }
+    loading[iter] = '#';
+    printf("\r[START] Booting Workers up [%s]",loading);
+    fflush(stdout);
   }
+  write(1, "\n", 1);
+
   for(size_t iter = 0; iter < no_of_workers; iter++) {
     pthread_join(pt[iter], NULL);
   }
