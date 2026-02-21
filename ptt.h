@@ -2,7 +2,7 @@
  * So have fun with this :3.
  *
  * Original Maintainer: Ana Alexandru-Gabriel <ana.alexandru.gabriel@proton.me>
- *
+ * Original Git Repo: https://github.com/kickhead13/ptt.h
  * */
 
 
@@ -24,6 +24,7 @@
 
 
 #define PTTH1_1 "HTTP/1.1"
+// TODO: add all HTTP methods
 #define PTTH1_1_404_NOT_FOUND PTTH1_1" 404 Not Found"
 #define PTTH1_1_202_ACCEPTED PTTH1_1" 202 Accepted"
 
@@ -96,13 +97,23 @@ typedef struct ptth_server_t {
   struct sockaddr_in   address;
 } ptth_server_t;
 
+
+// Please notice the API exposed by the library here:
+// API for managing HTTP server:
 void ptth_init_server(ptth_server_t *);
 void ptth_add_service(ptth_server_t *, enum ptth_methods_e, char *, ptth_response_t (*)(ptth_request_t, ptth_shared_t*));
 void ptth_services_new_service(ptth_services_t *service, char *endpoint, ptth_response_t (*)(ptth_request_t, ptth_shared_t*));
 void ptth_bind_server(ptth_server_t *, char *, size_t);
-int ptth_map_add_kv(ptth_map_t *, char *, char *);
 ptth_response_t ptth_new_repsonse();
 ptth_request_t ptth_empty_request();
+
+// API for managing underlying maps (please use carefully)
+int ptth_map_add_kv(ptth_map_t *, char *, char *);
+char *ptth_map_value(ptth_map_t, char *);
+int ptth_key_index(ptth_map_t, char *);
+char *ptth_map_get_value(ptth_map_t, char *);  // This one is particularly useful (see dynamic_request_path.c in examples)
+ptth_map_t *new_ptth_map();
+int ptth_map_set_value(ptth_map_t *, char *, char *);
 
 #define PTTH_RESPONDE_HTML(response_payload)\
   ptth_response_t resp;\
@@ -158,8 +169,8 @@ int ptth_map_add_kv(ptth_map_t *map, char *key, char *val) {
   if(map == NULL) return 0;
 
 
-  map -> keys[map -> len] = malloc(strlen(key));
-  map -> vals[map -> len] = malloc(strlen(val));
+  map -> keys[map -> len] = malloc(strlen(key)+1);
+  map -> vals[map -> len] = malloc(strlen(val)+1);
 
   strcpy(map -> keys[map -> len], key);
   strcpy(map -> vals[map -> len], val);
@@ -352,12 +363,13 @@ void ptth_log(enum ptth_methods_e method, char *ed, int fine) {
 void ptth_handle(int cfd, ptth_services_t *services[5]) {
   
   char request[PTTH_REQ_BUFFER_SIZE];
-  
+  int bytes_read = read(cfd, request, PTTH_REQ_BUFFER_SIZE-1);
+
   ptth_request_t req;
   ptth_shared_t *sh;
 
   char *req_ep = ptth_get_req_endpoint(request);
-  char *sreq_ep = malloc(strlen(req_ep));
+  char *sreq_ep = malloc(strlen(req_ep) + 1);
   strcpy(sreq_ep, req_ep);
 
   ptth_response_t resp;
