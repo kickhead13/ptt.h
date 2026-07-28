@@ -153,6 +153,7 @@ ptth_map_t *new_ptth_map() {
 }
 
 int ptth_map_set_value(ptth_map_t *map, char *key, char *val) {
+  printf("%s\n", key);
   if(map == NULL) return 0;
   for(size_t i = 0; i < map -> len; i++) {
     if(strcmp(map -> keys[i], key) == 0) {
@@ -196,6 +197,7 @@ void ptth_init_server(ptth_server_t *server) {
   server -> port   =    0;
 }
 
+// TODO: nuke this disgusting function
 regex_t *ptth_process_regex(char *load, ptth_map_t *map, int *order) {
   size_t ll = strlen(load);
   int exp = 0;
@@ -203,6 +205,7 @@ regex_t *ptth_process_regex(char *load, ptth_map_t *map, int *order) {
   size_t nlc = 0;
   char nk[20];
   size_t nkc = 0;
+  size_t rem = 0;
   size_t sc = -1;
   for(size_t i = 0; i < ll; i++) {
     if(load[i] == '/') sc++;
@@ -219,9 +222,11 @@ regex_t *ptth_process_regex(char *load, ptth_map_t *map, int *order) {
     if(load[i] == '}') {
       exp = 0;
       nk[nkc] = '\0';
+      nkc+=1;
       if(map == NULL)map = new_ptth_map();
       order[map -> len] = sc;
-      ptth_map_set_value(map, nk, "");
+      ptth_map_set_value(map, nk+rem, (char*)"");
+      rem=nkc;
     }
     if(exp == 1 && load[i] != '{') {
       nk[nkc] = load[i];

@@ -1,2 +1,8 @@
-test*
-rest*
+*
+!examples/
+!plus/
+!LICENSE
+!.gitignore
+!Makefile
+!README.md
+!ptt.h
